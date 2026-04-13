@@ -5,7 +5,7 @@
   "requirements": ["pymodbus>=2.0.0"],
   "dependencies": [],
   "codeowners": ["humberto@thegreenislandproject.com"],
-  "documentation": "https://thegreenislandproject.com",
+  "documentation": "https://thegreenislandproject.com/home-assistant-growatt-inverter-modbus-integration",
   "iot_class": "local_polling",
   "config_flow": true
 }
