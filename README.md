@@ -1,0 +1,210 @@
+# Growatt Modbus Integration
+
+A Home Assistant custom integration for reading real-time data from Growatt solar inverters via Modbus TCP.
+
+## Features
+
+- **Real-time monitoring** of voltage, current, and power from your Growatt inverter
+- **Configurable update interval** — adjust how often data is fetched (default: 5 seconds)
+- **Last-known values** — sensors display the most recent successful reading even if the inverter is temporarily unavailable
+- **Automatic retry** — connection failures trigger automatic reconnection attempts
+- **Multiple inverter support** — add multiple inverters with different configurations
+- **Debug sensor** — view raw data and diagnostics
+
+## Requirements
+
+- Home Assistant 2023.12 or later
+- Growatt inverter with Modbus TCP enabled
+- Network connectivity between Home Assistant and the inverter
+
+## Installation
+
+### Manual Installation
+
+1. Copy the `growatt_modbus` folder to your `custom_components` directory:
+
+~/.homeassistant/custom_components/growatt_modbus/
+
+
+2. Restart Home Assistant:
+
+Settings → System → Restart
+
+
+3. Add the integration:
+
+Settings → Devices & Services → Create Automation → Growatt Modbus
+
+
+## Configuration
+
+### Basic Setup
+
+1. Go to **Settings → Devices & Services**
+2. Click **Create Integration**
+3. Search for **Growatt Modbus**
+4. Enter the following information:
+- **Host**: IP address of your Growatt inverter (e.g., `192.168.2.13`)
+- **Port**: Modbus TCP port (default: `502`)
+- **Device Name**: A friendly name for your inverter (e.g., `Growatt`)
+- **Unit ID**: Modbus unit/slave ID (default: `1`)
+
+### Advanced Configuration
+
+You can optionally override default settings:
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| **Update Interval** | 5 seconds | How often to fetch data from the inverter |
+| **Timeout** | 5 seconds | Modbus connection timeout |
+| **Registers** | [3, 4] | Modbus register addresses for voltage and current |
+
+### Finding Your Inverter's IP Address
+
+1. Log in to your router's admin interface
+2. Check the connected devices list
+3. Look for your Growatt inverter's hostname (usually contains "Growatt")
+4. Note the IP address
+
+### Enabling Modbus TCP on Your Inverter
+
+1. Access your inverter's web interface (usually at `http://<inverter_ip>`)
+2. Log in with your credentials
+3. Navigate to **Settings → Communication → Modbus TCP**
+4. Enable Modbus TCP
+5. Note the port (usually `502` or `8899`)
+6. Restart the inverter
+
+## Sensors
+
+Once configured, the following sensors are automatically created:
+
+| Sensor | Unit | Description |
+|--------|------|-------------|
+| `sensor.growatt_voltage` | V | PV input voltage |
+| `sensor.growatt_current` | A | PV input current |
+| `sensor.growatt_power` | W | PV input power (calculated as voltage × current) |
+| `sensor.growatt_debug_data` | — | Debug sensor with raw register data |
+
+### Example Automation
+
+Monitor when power drops below 100W:
+
+```yaml
+automation:
+- alias: "Growatt Power Low"
+ trigger:
+   platform: numeric\_state
+   entity\_id: sensor.growatt\_power
+   below: 100
+ action:
+   service: notify.notify
+   data:
+     message: "PV power is below 100W"
+```
+
+Example Template Sensor
+
+Create daily energy totals in configuration.yaml:
+```yaml
+
+template:
+  - sensor:
+      - name: "Growatt Daily Energy"
+        unique\_id: growatt\_daily\_energy
+        unit\_of\_measurement: "kWh"
+        icon: mdi:solar-power
+        state: "{{ states('sensor.growatt\_power') | float(0) / 1000 }}"
+```
+
+Troubleshooting
+Integration Won't Set Up
+
+Error: "Could not connect to inverter"
+
+    Verify the inverter's IP address is correct
+    Confirm Modbus TCP is enabled on the inverter
+    Check that the port number is correct (default: 502)
+    Verify network connectivity between Home Assistant and the inverter:
+    bash
+
+    ping <inverter\_ip>
+
+    Check Home Assistant logs for more details:
+
+    Settings → System → Logs
+
+No Data / Sensors Show Unknown
+
+Error: "Modbus error ... Using last known values"
+
+    Verify the Modbus register addresses are correct for your inverter model
+    Check that the Unit ID matches your inverter configuration (usually 1)
+    Increase the Timeout value if you have a slow network
+    View the debug sensor to see raw register values:
+        Go to Developer Tools → States
+        Search for sensor.growatt_debug_data
+
+Connection Drops Frequently
+
+    Increase the Timeout value (try 10 seconds)
+    Check network stability between Home Assistant and the inverter
+    Verify the inverter isn't overheating (check inverter logs)
+    Move Home Assistant closer to the inverter or improve network connectivity
+
+Debug Sensor Shows No Data
+
+The debug sensor displays OK when readings are successful and stores raw data in extra_state_attributes. To view:
+
+    Go to Developer Tools → States
+    Click on sensor.growatt_debug_data
+    Expand the attributes section to see voltage, current, and power values
+
+Register Reference
+
+By default, the integration reads from:
+
+    Register 3: PV voltage (0.1 V scaling)
+    Register 4: PV current (0.1 A scaling)
+
+For other Growatt models, consult your inverter's Modbus documentation to find the correct register addresses.
+Common Register Addresses
+Data	Typical Register	Scaling
+PV Voltage	3	0.1 V
+PV Current	4	0.1 A
+PV Power	5	1 W
+Grid Voltage	35	0.1 V
+Grid Frequency	37	0.01 Hz
+Performance Notes
+
+    Update interval is set to 5 seconds by default — reduce this if you need faster updates, but be aware this increases network traffic
+    The integration retains last-known values if the inverter is temporarily unavailable, preventing sensor gaps
+    Connection failures trigger automatic retry with exponential backoff
+    All Modbus reads use short timeouts (default 5 seconds) to prevent Home Assistant from hanging
+
+Contributing
+
+Found a bug or want to improve the integration? Feel free to open an issue or submit a pull request.
+
+License
+APACHE 2.0
+
+This integration is provided as-is for use with Home Assistant.
+
+Support
+
+For issues specific to this integration, check the Home Assistant Community Forums.
+
+For Growatt inverter support, consult your inverter's manual or visit the Growatt website.
+
+
+This README covers:
+- **Features** — what the integration does
+- **Installation** — step-by-step setup
+- **Configuration** — all available options
+- **Sensors** — what data is available
+- **Examples** — automations and templates
+- **Troubleshooting** — common issues and fixes
+- **Technical reference** — register addresses and performance notes
+
+You can customize the inverter IP, register addresses, and other details based on your specific setup.
