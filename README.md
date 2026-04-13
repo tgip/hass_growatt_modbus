@@ -25,18 +25,15 @@ This is an alternative to getting these values from the default "Growatt Server"
 
 1. Copy the `growatt_modbus` folder to your `custom_components` directory:
 
-~/.homeassistant/custom_components/growatt_modbus/
-
+```~/.homeassistant/custom_components/growatt_modbus/```
 
 2. Restart Home Assistant:
 
-Settings → System → Restart
-
+```Settings → System → Restart```
 
 3. Add the integration:
 
-Settings → Devices & Services → Add integration → Growatt Modbus
-
+```Settings → Devices & Services → Add integration → Growatt Modbus```
 
 ## Configuration
 
@@ -109,7 +106,6 @@ Example Template Sensor
 
 Create daily energy totals in configuration.yaml:
 ```yaml
-
 template:
   - sensor:
       - name: "Growatt Daily Energy"
@@ -166,34 +162,37 @@ Register Reference
 
 By default, the integration reads from:
 
-    Register 3: PV voltage (0.1 V scaling)
-    Register 4: PV current (0.1 A scaling)
+    Register 3: PV1 voltage (0.1 V scaling)
+    Register 4: PV1 current (0.1 A scaling)
 
 For other Growatt models, consult your inverter's Modbus documentation to find the correct register addresses.
 Common Register Addresses
-Data	Typical Register	Scaling
-PV Voltage	3	0.1 V
-PV Current	4	0.1 A
-PV Power	5	1 W
-Grid Voltage	35	0.1 V
-Grid Frequency	37	0.01 Hz
-Performance Notes
+
+| Data          | Typical Register | Scaling |
+|---------------|------------------|---------|
+| PV Voltage    | 3                | 0.1 V   |
+| PV Current    | 4                | 0.1 A   |
+| PV Power      | 5                | 1 W     |
+| Grid Voltage  | 35               | 0.1 V   |  
+| Grid Frequency| 37               | 0.01 Hz | 
+
+### Performance Notes
 
     Update interval is set to 5 seconds by default — reduce this if you need faster updates, but be aware this increases network traffic
     The integration retains last-known values if the inverter is temporarily unavailable, preventing sensor gaps
     Connection failures trigger automatic retry with exponential backoff
     All Modbus reads use short timeouts (default 5 seconds) to prevent Home Assistant from hanging
 
-Contributing
+### Contributing
 
 Found a bug or want to improve the integration? Feel free to open an issue or submit a pull request.
 
-License
+### License
 APACHE 2.0
 
-This integration is provided as-is for use with Home Assistant.
+## This integration is provided as-is for use with Home Assistant.
 
-Support
+### Support
 
 For issues specific to this integration, check the Home Assistant Community Forums.
 
