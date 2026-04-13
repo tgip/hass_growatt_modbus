@@ -23,15 +23,16 @@ This is an alternative to getting these values from the default "Growatt Server"
 
 ### Manual Installation
 
-1. Copy the `growatt_modbus` folder to your `custom_components` directory:
+1. download the files from https://github.com/tgip/hass_growatt_modbus
+2. Copy the `growatt_modbus` folder to your `custom_components` directory:
 
 ```~/.homeassistant/custom_components/growatt_modbus/```
 
-2. Restart Home Assistant:
+3. Restart Home Assistant:
 
 ```Settings → System → Restart```
 
-3. Add the integration:
+4. Add the integration:
 
 ```Settings → Devices & Services → Add integration → Growatt Modbus```
 
