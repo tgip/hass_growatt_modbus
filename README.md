@@ -94,8 +94,8 @@ Monitor when power drops below 100W:
 automation:
 - alias: "Growatt Power Low"
  trigger:
-   platform: numeric\_state
-   entity\_id: sensor.growatt\_power
+   platform: numeric_state
+   entity_id: sensor.growatt_power
    below: 100
  action:
    service: notify.notify
@@ -110,10 +110,10 @@ Create daily energy totals in configuration.yaml:
 template:
   - sensor:
       - name: "Growatt Daily Energy"
-        unique\_id: growatt\_daily\_energy
-        unit\_of\_measurement: "kWh"
+        unique_id: growatt_daily_energy
+        unit_of_measurement: "kWh"
         icon: mdi:solar-power
-        state: "{{ states('sensor.growatt\_power') | float(0) / 1000 }}"
+        state: "{{ states('sensor.growatt_power') | float(0) / 1000 }}"
 ```
 
 Troubleshooting
@@ -127,7 +127,7 @@ Error: "Could not connect to inverter"
     Verify network connectivity between Home Assistant and the inverter:
     bash
 
-    ping <inverter\_ip>
+    ping <inverter_ip>
 
     Check Home Assistant logs for more details:
 
