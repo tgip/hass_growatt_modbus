@@ -41,7 +41,10 @@ class GrowattOptionsFlowHandler(config_entries.OptionsFlow):
         # Try to fetch current register readings to show as context (non-fatal)
         try:
             data = self.config_entry.data
-            reader = ModbusReader(host=data[CONF_HOST], port=data.get(CONF_PORT, DEFAULT_PORT), timeout=data.get(CONF_TIMEOUT, DEFAULT_TIMEOUT))
+            reader = ModbusReader(
+                host=data[CONF_HOST], port=data.get(CONF_PORT, DEFAULT_PORT),
+                timeout=data.get(CONF_TIMEOUT, DEFAULT_TIMEOUT)
+                )
             await reader.async_connect()
             regs_existing = data.get(CONF_REGISTERS, [3, 4])
             v = await reader.async_read_register(regs_existing[0], data.get(CONF_UNIT_ID, 1))
@@ -58,14 +61,18 @@ class GrowattOptionsFlowHandler(config_entries.OptionsFlow):
 
         default_regs_csv = ",".join(str(x) for x in self.config_entry.data.get(CONF_REGISTERS, [3, 4]))
 
-        schema = vol.Schema({
-            Required(CONF_NAME, default=self.config_entry.data.get(CONF_NAME)): str,
-            Required(CONF_HOST, default=self.config_entry.data.get(CONF_HOST)): str,
-            Required(CONF_PORT, default=self.config_entry.data.get(CONF_PORT, DEFAULT_PORT)): Coerce(int),
-            Required(CONF_UNIT_ID, default=self.config_entry.data.get(CONF_UNIT_ID, 1)): Coerce(int),
-            Required(CONF_REGISTERS, default=default_regs_csv): str,
-            Optional(CONF_MONITOR_INTERVAL, default=self.config_entry.data.get(CONF_MONITOR_INTERVAL, DEFAULT_MONITOR_INTERVAL)): Coerce(int),
-            Optional(CONF_TIMEOUT, default=self.config_entry.data.get(CONF_TIMEOUT, DEFAULT_TIMEOUT)): Coerce(int),
-        })
+        schema = vol.Schema(
+            {
+                Required(CONF_NAME, default=self.config_entry.data.get(CONF_NAME)): str,
+                Required(CONF_HOST, default=self.config_entry.data.get(CONF_HOST)): str,
+                Required(CONF_PORT, default=self.config_entry.data.get(CONF_PORT, DEFAULT_PORT)): Coerce(int),
+                Required(CONF_UNIT_ID, default=self.config_entry.data.get(CONF_UNIT_ID, 1)): Coerce(int),
+                Required(CONF_REGISTERS, default=default_regs_csv): str, Optional(
+                CONF_MONITOR_INTERVAL,
+                default=self.config_entry.data.get(CONF_MONITOR_INTERVAL, DEFAULT_MONITOR_INTERVAL)
+                ): Coerce(int),
+                Optional(CONF_TIMEOUT, default=self.config_entry.data.get(CONF_TIMEOUT, DEFAULT_TIMEOUT)): Coerce(int),
+                }
+            )
 
         return self.async_show_form(step_id="init", data_schema=schema, errors=errors)

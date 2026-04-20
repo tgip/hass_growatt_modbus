@@ -37,10 +37,8 @@ class GrowattModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
             if not errors:
                 reader = ModbusReader(
-                    host=user_input[CONF_HOST],
-                    port=user_input.get(CONF_PORT, DEFAULT_PORT),
-                    timeout=user_input.get(CONF_TIMEOUT, DEFAULT_TIMEOUT),
-                )
+                    host=user_input[CONF_HOST], port=user_input.get(CONF_PORT, DEFAULT_PORT),
+                    timeout=user_input.get(CONF_TIMEOUT, DEFAULT_TIMEOUT), )
                 try:
                     await reader.async_connect()
                     v = await reader.async_read_register(regs[0], user_input.get(CONF_UNIT_ID, DEFAULT_UNIT_ID))
@@ -54,29 +52,25 @@ class GrowattModbusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             if not errors:
                 title = user_input.get(CONF_NAME) or f"Growatt {user_input[CONF_HOST]}"
                 data = {
-                    CONF_NAME: user_input.get(CONF_NAME),
-                    CONF_HOST: user_input[CONF_HOST],
+                    CONF_NAME: user_input.get(CONF_NAME), CONF_HOST: user_input[CONF_HOST],
                     CONF_PORT: user_input.get(CONF_PORT, DEFAULT_PORT),
-                    CONF_UNIT_ID: user_input.get(CONF_UNIT_ID, DEFAULT_UNIT_ID),
-                    CONF_REGISTERS: regs,
+                    CONF_UNIT_ID: user_input.get(CONF_UNIT_ID, DEFAULT_UNIT_ID), CONF_REGISTERS: regs,
                     CONF_MONITOR_INTERVAL: user_input.get(CONF_MONITOR_INTERVAL, DEFAULT_MONITOR_INTERVAL),
                     CONF_TIMEOUT: user_input.get(CONF_TIMEOUT, DEFAULT_TIMEOUT),
-                }
+                    }
                 return self.async_create_entry(title=title, data=data)
 
         import voluptuous as vol
         from voluptuous import Required, Optional, Coerce
 
         return self.async_show_form(
-            step_id="user",
-            data_schema=vol.Schema({
-                Required(CONF_NAME, default="Growatt Inverter"): str,
-                Required(CONF_HOST): str,
-                Optional(CONF_PORT, default=DEFAULT_PORT): Coerce(int),
-                Optional(CONF_UNIT_ID, default=DEFAULT_UNIT_ID): Coerce(int),
-                Optional(CONF_REGISTERS, default="{},{}".format(*DEFAULT_REGISTERS)): str,
-                Optional(CONF_MONITOR_INTERVAL, default=DEFAULT_MONITOR_INTERVAL): Coerce(int),
-                Optional(CONF_TIMEOUT, default=DEFAULT_TIMEOUT): Coerce(int),
-            }),
-            errors=errors,
-        )
+            step_id="user", data_schema=vol.Schema(
+                {
+                    Required(CONF_NAME, default="Growatt Inverter"): str, Required(CONF_HOST): str,
+                    Optional(CONF_PORT, default=DEFAULT_PORT): Coerce(int),
+                    Optional(CONF_UNIT_ID, default=DEFAULT_UNIT_ID): Coerce(int),
+                    Optional(CONF_REGISTERS, default="{},{}".format(*DEFAULT_REGISTERS)): str,
+                    Optional(CONF_MONITOR_INTERVAL, default=DEFAULT_MONITOR_INTERVAL): Coerce(int),
+                    Optional(CONF_TIMEOUT, default=DEFAULT_TIMEOUT): Coerce(int),
+                    }
+                ), errors=errors, )
