@@ -24,8 +24,8 @@ async def async_setup_entry(
         ) -> None:
     """Set up sensors from a config entry.
 
-    The Modbus client is created and tested in ``__init__.py``; here we only
-    retrieve the already‑verified client from ``hass.data``.
+    The Modbus client is created and tested in '__init__.py'; here we only
+    retrieve the already‑verified client from 'hass.data'.
     """
     data = entry.data
 
