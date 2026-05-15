@@ -5,7 +5,7 @@ from __future__ import annotations
 import inspect
 import logging
 from datetime import timedelta
-
+from pymodbus.client import AsyncModbusTcpClient
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -30,12 +30,12 @@ async def async_setup_entry(
     data = entry.data
 
     # -----------------------------------------------------------------
-    # 1️⃣ Retrieve the reusable client that was stored by __init__.py
+    # 1 Retrieve the reusable client that was stored by __init__.py
     # -----------------------------------------------------------------
     client = hass.data[DOMAIN][entry.entry_id]["client"]
 
     # -----------------------------------------------------------------
-    # 2️⃣ Gather configuration values (with defaults)
+    # 2 Gather configuration values (with defaults)
     # -----------------------------------------------------------------
     name = data.get("name", "Growatt")
     unit_id = data.get("unit", DEFAULT_UNIT_ID)
@@ -120,7 +120,7 @@ async def async_setup_entry(
         finally:
             # -------------------------------------------------------------
             # Close the TCP connection.
-            # ``close`` may be sync or async depending on pymodbus version.
+            # "close" may be sync or async depending on pymodbus version.
             # -------------------------------------------------------------
             close_fn = getattr(client, "close", None)
             if callable(close_fn):
@@ -139,11 +139,12 @@ async def async_setup_entry(
     await coordinator.async_config_entry_first_refresh()
 
     # -----------------------------------------------------------------
-    # Create the sensor entities
+    # Create the sensor entities (include entry_id and unit_id for unique ids)
     # -----------------------------------------------------------------
-    sensors = [GrowattSensor(coordinator, name, "voltage", "Voltage", "V"),
-        GrowattSensor(coordinator, name, "current", "Current", "A"),
-        GrowattSensor(coordinator, name, "power", "Power", "W"), GrowattDebugSensor(coordinator, name), ]
+    sensors = [GrowattSensor(coordinator, entry.entry_id, unit_id, name, "voltage", "Voltage", "V"),
+        GrowattSensor(coordinator, entry.entry_id, unit_id, name, "current", "Current", "A"),
+        GrowattSensor(coordinator, entry.entry_id, unit_id, name, "power", "Power", "W"),
+        GrowattDebugSensor(coordinator, entry.entry_id, unit_id, name), ]
 
     async_add_entities(sensors)
 
@@ -151,11 +152,15 @@ class GrowattSensor(CoordinatorEntity, SensorEntity):
     """Generic Growatt measurement sensor."""
 
     def __init__(
-            self, coordinator, device_name: str, key: str, friendly_name: str, unit: str, ) -> None:
+            self, coordinator, entry_id: str, unit_id: int, device_name: str, key: str, friendly_name: str,
+            unit: str, ) -> None:
         super().__init__(coordinator)
         self._attr_name = f"{device_name} {friendly_name}"
         self._key = key
         self._attr_native_unit_of_measurement = unit
+
+        # unique ID: "<entry_id>_<unit_id>_<key>"
+        self._attr_unique_id = f"{entry_id}_{unit_id}_{key}"
 
         # ---- device class handling (measurement) ----
         if key == "voltage":
@@ -164,9 +169,6 @@ class GrowattSensor(CoordinatorEntity, SensorEntity):
             self._attr_device_class = SensorDeviceClass.CURRENT
         elif key == "power":
             self._attr_device_class = SensorDeviceClass.POWER
-        # AttributeError: type object 'SensorDeviceClass' has no attribute 'MEASUREMENT'
-        # else:
-        #    self._attr_device_class = SensorDeviceClass.MEASUREMENT
         else:
             # No explicit generic class; leaving it unset yields the default
             self._attr_device_class = None
@@ -179,13 +181,15 @@ class GrowattSensor(CoordinatorEntity, SensorEntity):
 class GrowattDebugSensor(CoordinatorEntity, SensorEntity):
     """Debug sensor exposing the full raw payload."""
 
-    def __init__(self, coordinator, device_name: str) -> None:
+    def __init__(self, coordinator, entry_id: str, unit_id: int, device_name: str) -> None:
         super().__init__(coordinator)
         self._attr_name = f"{device_name} Debug Data"
         self._attr_icon = "mdi:chart-line"
-        # self._attr_device_class = SensorDeviceClass.MEASUREMENT
         # No specific device class needed for a generic debug sensor
         self._attr_device_class = None
+
+        # unique ID for debug sensor
+        self._attr_unique_id = f"{entry_id}_{unit_id}_debug"
 
     @property
     def native_value(self):
