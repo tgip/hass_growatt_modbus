@@ -17,7 +17,7 @@ SENSORS = {
         },
     "sensor_2": {
         "register_address": 4, "name": "Amperage", "key": "key_2", "friendly_name": "Friendly Sensor 2", "scaling_factor": 1,
-        "unit": "kW", "device_class": SensorDeviceClass.AMPERAGE,
+        "unit": "kW", "device_class": SensorDeviceClass.CURRENT,
         },
     # Add more sensors here as needed.
     }
