@@ -62,7 +62,8 @@ async def async_setup_entry(
     async def read_reg_compat(addr: int, unit: int):
         """Read a register with the best‑matching method on the client."""
         candidates = [getattr(client, name) for name in
-            ("read_input_registers", "read_holding_registers", "read_registers", "read",) if hasattr(client, name)]
+                      ("read_input_registers", "read_holding_registers", "read_registers", "read",) if
+                      hasattr(client, name)]
 
         for fn in candidates:
             # Try the most common signatures first
@@ -70,7 +71,7 @@ async def async_setup_entry(
                          (addr, 1),  # addr, count
                          (addr, unit),  # addr, unit
                          (addr,),  # addr only
-                    ):
+                         ):
                 result = await try_call(fn, *args)
                 if result is not None:
                     return result
@@ -142,9 +143,9 @@ async def async_setup_entry(
     # Create the sensor entities (include entry_id and unit_id for unique ids)
     # -----------------------------------------------------------------
     sensors = [GrowattSensor(coordinator, entry.entry_id, unit_id, name, "voltage", "Voltage", "V"),
-        GrowattSensor(coordinator, entry.entry_id, unit_id, name, "current", "Current", "A"),
-        GrowattSensor(coordinator, entry.entry_id, unit_id, name, "power", "Power", "W"),
-        GrowattDebugSensor(coordinator, entry.entry_id, unit_id, name), ]
+               GrowattSensor(coordinator, entry.entry_id, unit_id, name, "current", "Current", "A"),
+               GrowattSensor(coordinator, entry.entry_id, unit_id, name, "power", "Power", "W"),
+               GrowattDebugSensor(coordinator, entry.entry_id, unit_id, name), ]
 
     async_add_entities(sensors)
 
@@ -158,6 +159,7 @@ class GrowattSensor(CoordinatorEntity, SensorEntity):
         self._attr_name = f"{device_name} {friendly_name}"
         self._key = key
         self._attr_native_unit_of_measurement = unit
+        self._attr_state_class = "measurement"  # or "total" / "total_increasing"
 
         # unique ID: "<entry_id>_<unit_id>_<key>"
         self._attr_unique_id = f"{entry_id}_{unit_id}_{key}"

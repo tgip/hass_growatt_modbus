@@ -92,15 +92,15 @@ Monitor when power drops below 100W:
 
 ```yaml
 automation:
-- alias: "Growatt Power Low"
- trigger:
-   platform: numeric_state
-   entity_id: sensor.growatt_power
-   below: 100
- action:
-   service: notify.notify
-   data:
-     message: "PV power is below 100W"
+  - alias: "Growatt Power Low"
+    trigger:
+      platform: numeric_state
+      entity_id: sensor.growatt_power
+      below: 100
+    action:
+      service: notify.notify
+      data:
+        message: "PV power is below 100W"
 ```
 
 Example Template Sensor
