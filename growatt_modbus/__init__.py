@@ -6,7 +6,7 @@ from homeassistant.core import HomeAssistant
 
 from pymodbus.client import AsyncModbusTcpClient
 
-from .const import DOMAIN, PLATFORMS, DEFAULT_PORT, DEFAULT_TIMEOUT
+from .const import DOMAIN, PLATFORMS, DEFAULT_PORT, DEFAULT_TIMEOUT, DEFAULT_UNIT_ID
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -39,10 +39,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         # Perform a tiny read (register 0) just to be sure the device answers.
         # Adjust the register number if your inverter uses a different one.
         try:
-            await client.read_input_registers(0, 1, unit=data.get("unit", 0))
-        except Exception as exc:  # pylint: disable=broad-except
+            await client.read_input_registers(0, 1, unit=data.get("unit", DEFAULT_UNIT_ID))
+        except Exception as exc:  # keep as debug-friendly fallback for initial probe
             _LOGGER.debug(
-                "Initial register read failed – still considering the connection alive: %s", exc, )
+                "Initial register read failed – still considering the connection alive: %s", exc,
+            )
         # ----------------------------------------------------------
         # Close the temporary test connection.
         # ``close`` may be sync or async depending on pymodbus version.
@@ -53,13 +54,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             if hasattr(result, "__await__"):
                 await result
 
-    except Exception as err:  # pylint: disable=broad-except
+    except Exception as err:  # pragma: no cover - bubble up as ConfigEntryNotReady
         _LOGGER.error(
-            "Failed to connect to Growaat inverter at %s:%s – will retry: %s", host, port, err, )
+            "Failed to connect to Growatt inverter at %s:%s – will retry: %s", host, port, err,
+        )
         # Raising ``ConfigEntryNotReady`` tells HA to retry later.
         raise ConfigEntryNotReady(
             f"Could not connect to Growatt inverter at {host}:{port}"
-            ) from err
+        ) from err
 
     # --------------------------------------------------------------
     # 2. Store the verified client (and raw entry data) for the platforms.
@@ -68,7 +70,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DOMAIN][entry.entry_id] = {
         "client": client,  # reusable Modbus client
         "data": entry.data,  # keep original config data handy
-        }
+    }
 
     # --------------------------------------------------------------
     # 3. Forward the config entry to the platforms (sensor, switch, …)

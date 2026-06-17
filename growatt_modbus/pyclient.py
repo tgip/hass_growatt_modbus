@@ -2,7 +2,10 @@
 
 import asyncio
 import inspect
+import logging
 from pymodbus.client import ModbusTcpClient
+
+_LOGGER = logging.getLogger(__name__)
 
 class ModbusReader:
     """Synchronous Modbus reader using ModbusTcpClient executed in executor."""
@@ -51,7 +54,8 @@ class ModbusReader:
                 for args in ((addr, 1, unit), (addr, 1), (addr, unit), (addr,)):
                     try:
                         res = fn(*args)
-                    except Exception:
+                    except Exception as e:
+                        _LOGGER.debug("Modbus read call %s with args %s failed: %s", getattr(fn, "__name__", str(fn)), args, e)
                         continue
                     if res is None:
                         continue
@@ -64,7 +68,8 @@ class ModbusReader:
                     if "unit" in sig.parameters:
                         try:
                             res = fn(addr, 1, unit=unit)
-                        except Exception:
+                        except Exception as e:
+                            _LOGGER.debug("Modbus read call %s with unit= failed: %s", getattr(fn, "__name__", str(fn)), e)
                             continue
                         if res is None:
                             continue
@@ -72,7 +77,9 @@ class ModbusReader:
                             return res.registers[0]
                         if isinstance(res, int):
                             return res
-                except Exception:
+                except (ValueError, TypeError) as e:
+                    # signature() may raise for some builtins; just skip in that case
+                    _LOGGER.debug("Could not inspect signature of %s: %s", getattr(fn, "__name__", str(fn)), e)
                     continue
             raise RuntimeError(f"No compatible register-read method found for client at addr {addr}")
 

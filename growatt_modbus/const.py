@@ -14,12 +14,13 @@ SENSORS = {
     "sensor_1": {
         "register_address": 3, "name": "Voltage", "key": "voltage", "friendly_name": "Voltage",
         "scaling_factor": 0.1, "unit": "V", "device_class": SensorDeviceClass.VOLTAGE,
-        },
+    },
     "sensor_2": {
-        "register_address": 4, "name": "Amperage", "key": "key_2", "friendly_name": "Friendly Sensor 2", "scaling_factor": 1,
-        "unit": "kW", "device_class": SensorDeviceClass.CURRENT,
-        },
+        # Make this a proper current sensor (was inconsistent before)
+        "register_address": 4, "name": "Current", "key": "current", "friendly_name": "Current", "scaling_factor": 0.1,
+        "unit": "A", "device_class": SensorDeviceClass.CURRENT,
+    },
     # Add more sensors here as needed.
-    }
+}
 
 DEFAULT_SENSOR_KEYS = list(SENSORS.keys())  # For default initialization.
