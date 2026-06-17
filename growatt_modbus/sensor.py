@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import inspect
 import logging
+import asyncio
 from datetime import timedelta
 from pymodbus.client import AsyncModbusTcpClient
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
@@ -11,11 +12,11 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity, DataUpdateCoordinator,
-    )
+)
 
 from .const import (
     DOMAIN, DEFAULT_MONITOR_INTERVAL, DEFAULT_REGISTERS, DEFAULT_UNIT_ID,
-    )
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -50,10 +51,10 @@ async def async_setup_entry(
     # Helper: try a coroutine and swallow the typical attribute‑type errors
     # -----------------------------------------------------------------
     async def try_call(fn, *args, **kwargs):
-        """Call a coroutine, return None on TypeError / AttributeError."""
+        """Call a coroutine, return None on TypeError / AttributeError / Connection/Timeout."""
         try:
             return await fn(*args, **kwargs)
-        except (TypeError, AttributeError):
+        except (TypeError, AttributeError, asyncio.TimeoutError, ConnectionError):
             return None
 
     # -----------------------------------------------------------------
